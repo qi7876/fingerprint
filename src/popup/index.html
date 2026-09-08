@@ -13,24 +13,23 @@
       <section class="card" aria-labelledby="ip-module-title">
         <header class="card-header">
           <h2 id="ip-module-title">IP Module</h2>
-          <label class="switch" title="Enable IP Module">
-            <input id="ip-enabled" type="checkbox" />
-            <span aria-hidden="true"></span>
-          </label>
+          <input
+            id="ip-enabled"
+            class="checkbox"
+            type="checkbox"
+            aria-labelledby="ip-module-title"
+            title="Enable IP Module"
+          />
         </header>
 
-        <div class="setting-row">
-          <label for="auto-timezone">Set timezone automatically</label>
-          <label class="switch">
-            <input id="auto-timezone" type="checkbox" />
-            <span aria-hidden="true"></span>
+        <div class="setting-list">
+          <label class="setting-row" for="auto-timezone">
+            <span>Set timezone automatically</span>
+            <input id="auto-timezone" class="checkbox" type="checkbox" />
           </label>
-        </div>
-        <div class="setting-row">
-          <label for="auto-languages">Set languages automatically</label>
-          <label class="switch">
-            <input id="auto-languages" type="checkbox" />
-            <span aria-hidden="true"></span>
+          <label class="setting-row" for="auto-languages">
+            <span>Set languages automatically</span>
+            <input id="auto-languages" class="checkbox" type="checkbox" />
           </label>
         </div>
 
@@ -52,10 +51,13 @@
             <h2 id="webrtc-title">WebRTC</h2>
             <p>When disabled, WebRTC and media APIs are removed from web pages.</p>
           </div>
-          <label class="switch" title="Enable WebRTC">
-            <input id="webrtc-enabled" type="checkbox" />
-            <span aria-hidden="true"></span>
-          </label>
+          <input
+            id="webrtc-enabled"
+            class="checkbox"
+            type="checkbox"
+            aria-labelledby="webrtc-title"
+            title="Enable WebRTC"
+          />
         </header>
       </section>
 
@@ -65,10 +67,13 @@
             <h2 id="fast-inject-title">Fast injection</h2>
             <p>Uses Chrome's userScripts API to inject earlier. Compatibility mode is used when disabled.</p>
           </div>
-          <label class="switch" title="Enable fast injection">
-            <input id="fast-inject-enabled" type="checkbox" />
-            <span aria-hidden="true"></span>
-          </label>
+          <input
+            id="fast-inject-enabled"
+            class="checkbox"
+            type="checkbox"
+            aria-labelledby="fast-inject-title"
+            title="Enable fast injection"
+          />
         </header>
       </section>
     </main>

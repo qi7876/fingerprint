@@ -2,7 +2,7 @@ declare const coreInject: (args: CoreArguments) => void
 declare const _args: unknown
 
 type CoreArguments = {
-  storage: ExtensionStorage
+  config: InjectionConfig
   fun?: (args: CoreArguments) => void
 }
 
@@ -14,48 +14,48 @@ type RuntimeGlobal = typeof globalThis & {
 
 const args = _args as CoreArguments
 
-const install = (runtime: RuntimeGlobal, storage: ExtensionStorage): void => {
+const install = (runtime: RuntimeGlobal, config: InjectionConfig): void => {
   const marker = '__fingerprint_injected__'
   if ((runtime as unknown as Record<string, unknown>)[marker]) return
   Object.defineProperty(runtime, marker, { value: true })
 
-  const proxyTargets = new WeakMap<Function, Function>()
+  let proxyTargets: WeakMap<Function, Function> | undefined
   const wrap = <T extends Function>(target: T, handler: ProxyHandler<T>): T => {
     const proxy = new Proxy(target, handler)
+    proxyTargets ??= new WeakMap<Function, Function>()
     proxyTargets.set(proxy, target)
     return proxy
   }
 
-  const nativeToString = runtime.Function.prototype.toString
-  runtime.Function.prototype.toString = wrap(nativeToString, {
-    apply(target, thisArg, callArgs) {
-      return Reflect.apply(target, proxyTargets.get(thisArg as Function) ?? thisArg, callArgs)
-    },
-  })
-
-  const { settings, ipInfo } = storage
-  const languages = settings.ipEnabled && settings.autoLanguages ? ipInfo?.languages : undefined
-  const timezone = settings.ipEnabled && settings.autoTimezone ? ipInfo?.timezone : undefined
+  const { disableWebRtc, languages, timezone } = config
+  const needsLocaleHooks = languages != null || timezone != null
+  if (needsLocaleHooks) {
+    const nativeToString = runtime.Function.prototype.toString
+    runtime.Function.prototype.toString = wrap(nativeToString, {
+      apply(target, thisArg, callArgs) {
+        return Reflect.apply(target, proxyTargets?.get(thisArg as Function) ?? thisArg, callArgs)
+      },
+    })
+  }
 
   if (languages != null && languages.length > 0) {
     const navigatorPrototype = runtime.Navigator?.prototype ?? runtime.WorkerNavigator?.prototype
     if (navigatorPrototype != null) {
-      Object.defineProperties(navigatorPrototype, {
-        language: {
-          configurable: true,
-          enumerable: true,
-          get: wrap(function language(): string {
-            return languages[0]
-          }, {}),
-        },
-        languages: {
-          configurable: true,
-          enumerable: true,
-          get: wrap(function languagesGetter(): readonly string[] {
-            return Object.freeze([...languages])
-          }, {}),
-        },
-      })
+      const stableLanguages = Object.freeze([...languages])
+      const languageDescriptor = Object.getOwnPropertyDescriptor(navigatorPrototype, 'language')
+      const languagesDescriptor = Object.getOwnPropertyDescriptor(navigatorPrototype, 'languages')
+      if (languageDescriptor?.get != null) {
+        Object.defineProperty(navigatorPrototype, 'language', {
+          ...languageDescriptor,
+          get: wrap(languageDescriptor.get, { apply: () => stableLanguages[0] }),
+        })
+      }
+      if (languagesDescriptor?.get != null) {
+        Object.defineProperty(navigatorPrototype, 'languages', {
+          ...languagesDescriptor,
+          get: wrap(languagesDescriptor.get, { apply: () => stableLanguages }),
+        })
+      }
     }
   }
 
@@ -219,7 +219,7 @@ const install = (runtime: RuntimeGlobal, storage: ExtensionStorage): void => {
     })
   }
 
-  if (!settings.webrtcEnabled && runtime.window != null) {
+  if (disableWebRtc && runtime.window != null) {
     const win = runtime.window
     const disableProperty = (target: object, key: string): void => {
       try {
@@ -247,27 +247,29 @@ const install = (runtime: RuntimeGlobal, storage: ExtensionStorage): void => {
     }
   }
 
-  if (runtime.window != null) {
+  if (needsLocaleHooks && runtime.window != null) {
     const win = runtime.window
     const injectFrame = (frame: HTMLIFrameElement): void => {
       try {
-        if (frame.contentWindow != null) install(frame.contentWindow as unknown as RuntimeGlobal, storage)
+        if (frame.contentWindow != null) install(frame.contentWindow as unknown as RuntimeGlobal, config)
       } catch {
         // Cross-origin frames are covered by allFrames injection.
       }
     }
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node instanceof HTMLIFrameElement) injectFrame(node)
-          if (node instanceof Element) {
-            node.querySelectorAll('iframe').forEach(injectFrame)
+    if (win.document.readyState === 'loading') {
+      const observer = new win.MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node instanceof win.HTMLIFrameElement) injectFrame(node)
+            if (node instanceof win.Element) {
+              node.querySelectorAll('iframe').forEach(injectFrame)
+            }
           }
         }
-      }
-    })
-    observer.observe(win.document.documentElement, { childList: true, subtree: true })
-    win.addEventListener('load', () => observer.disconnect(), { once: true })
+      })
+      observer.observe(win.document, { childList: true, subtree: true })
+      win.addEventListener('load', () => observer.disconnect(), { once: true })
+    }
 
     const blobs = new Map<string, Blob>()
     const nativeCreateObjectUrl = win.URL.createObjectURL
@@ -295,10 +297,16 @@ const install = (runtime: RuntimeGlobal, storage: ExtensionStorage): void => {
             const inject = args.fun ?? coreInject
             if (original != null && inject != null) {
               const blob = new Blob([
-                `(${inject.toString()})({storage:${JSON.stringify(storage)}});\n`,
+                `(${inject.toString()})({config:${JSON.stringify(config)}});\n`,
                 original,
               ], { type: 'application/javascript' })
-              workerArgs[0] = URL.createObjectURL(blob)
+              const injectedUrl = win.URL.createObjectURL(blob)
+              workerArgs[0] = injectedUrl
+              try {
+                return Reflect.construct(target, workerArgs, newTarget)
+              } finally {
+                win.URL.revokeObjectURL(injectedUrl)
+              }
             }
           }
           return Reflect.construct(target, workerArgs, newTarget)
@@ -310,4 +318,4 @@ const install = (runtime: RuntimeGlobal, storage: ExtensionStorage): void => {
   }
 }
 
-install(globalThis as RuntimeGlobal, args.storage)
+install(globalThis as RuntimeGlobal, args.config)

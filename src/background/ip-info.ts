@@ -1,17 +1,15 @@
 import { IpApi } from '@/api/ip'
 import countryLanguages from '@/data/country_languages.json'
-import { getStorage, replaceStorage } from './storage'
-import { reRegisterScript } from './script'
-import { reRequestHeader } from './request'
+import { getStorage, replaceAndSynchronizeStorage, replaceStorage } from './storage'
 
-export const refreshIp = async (): Promise<ExtensionStorage> => {
+export const refreshIp = async (synchronize = true): Promise<ExtensionStorage> => {
   const current = await getStorage()
   if (!current.settings.ipEnabled) {
     if (current.ipInfo == null) return current
     const next = { ...current, ipInfo: undefined }
-    await replaceStorage(next)
-    await Promise.all([reRegisterScript(), reRequestHeader()])
-    return next
+    return synchronize
+      ? replaceAndSynchronizeStorage(current, next)
+      : replaceStorage(next)
   }
 
   const data = await IpApi.getIp()
@@ -26,7 +24,7 @@ export const refreshIp = async (): Promise<ExtensionStorage> => {
       updatedAt: Date.now(),
     },
   }
-  await replaceStorage(next)
-  await Promise.all([reRegisterScript(), reRequestHeader()])
-  return next
+  return synchronize
+    ? replaceAndSynchronizeStorage(current, next)
+    : replaceStorage(next)
 }

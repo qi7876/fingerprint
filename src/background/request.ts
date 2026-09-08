@@ -1,4 +1,3 @@
-import { getStorage } from './storage'
 import { formatAcceptLanguage } from '@/config'
 
 const LANGUAGE_RULE_ID = 1
@@ -7,15 +6,17 @@ const removeLanguageRule = async (): Promise<void> => {
   await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [LANGUAGE_RULE_ID] })
 }
 
-export const reRequestHeader = async (): Promise<void> => {
-  const { settings, ipInfo } = await getStorage()
+export const requestHeaderValue = ({ settings, ipInfo }: ExtensionStorage): string => {
   const languages = settings.ipEnabled && settings.autoLanguages ? ipInfo?.languages : undefined
-  if (languages == null || languages.length === 0) {
+  return languages == null ? '' : formatAcceptLanguage(languages)
+}
+
+export const syncRequestHeader = async (storage: ExtensionStorage): Promise<void> => {
+  const value = requestHeaderValue(storage)
+  if (value === '') {
     await removeLanguageRule()
     return
   }
-
-  const value = formatAcceptLanguage(languages)
 
   await chrome.declarativeNetRequest.updateSessionRules({
     removeRuleIds: [LANGUAGE_RULE_ID],

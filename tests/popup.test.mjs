@@ -3,8 +3,9 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 test('popup exposes every supported setting without a UI framework', async () => {
-  const [html, packageJson] = await Promise.all([
+  const [html, css, packageJson] = await Promise.all([
     readFile(new URL('../src/popup/index.html', import.meta.url), 'utf8'),
+    readFile(new URL('../src/popup/index.css', import.meta.url), 'utf8'),
     readFile(new URL('../package.json', import.meta.url), 'utf8').then(JSON.parse),
   ])
 
@@ -18,6 +19,10 @@ test('popup exposes every supported setting without a UI framework', async () =>
   ]) {
     assert.match(html, new RegExp(`id=["']${id}["']`))
   }
+
+  assert.doesNotMatch(html, /class=["']switch["']/)
+  assert.doesNotMatch(css, /border-radius|box-shadow|prefers-color-scheme|transition/)
+  assert.match(css, /accent-color:\s*var\(--primary\)/)
 
   assert.equal(packageJson.dependencies, undefined)
   assert.deepEqual(Object.keys(packageJson.devDependencies).sort(), [

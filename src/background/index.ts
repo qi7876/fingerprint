@@ -1,24 +1,21 @@
 import { refreshIp } from './ip-info'
-import { reRequestHeader } from './request'
-import { hasUserScripts, injectScript, reRegisterScript } from './script'
-import { getStorage, initStorage, updateSettings } from './storage'
+import { hasUserScripts, injectScript, syncRegisteredScript } from './script'
+import { getStorage, initStorage, synchronizeStorage, updateSettings } from './storage'
 
-const initialize = async (): Promise<void> => {
-  await initStorage()
-  await Promise.all([reRegisterScript(), reRequestHeader()])
+const initialize = async (refresh: boolean): Promise<void> => {
+  let storage = await initStorage()
+  if (refresh && storage.settings.ipEnabled) {
+    storage = await refreshIp(false).catch(() => storage)
+  }
+  await synchronizeStorage(storage)
 }
 
 chrome.runtime.onInstalled.addListener(() => {
-  void initialize()
+  void initialize(false)
 })
 
 chrome.runtime.onStartup.addListener(() => {
-  void initialize().then(async () => {
-    const storage = await getStorage()
-    if (storage.settings.ipEnabled) {
-      await refreshIp().catch(() => undefined)
-    }
-  })
+  void initialize(true)
 })
 
 chrome.runtime.onMessage.addListener(((message, _sender, sendResponse) => {
@@ -50,7 +47,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 chrome.permissions.onAdded.addListener((permissions) => {
   if (permissions.permissions?.includes('userScripts')) {
-    void reRegisterScript()
+    void getStorage().then(syncRegisteredScript)
   }
 })
 
@@ -60,5 +57,3 @@ chrome.permissions.onRemoved.addListener((permissions) => {
     updateSettings({ ...storage.settings, fastInject: false })
   ))
 })
-
-void initialize()

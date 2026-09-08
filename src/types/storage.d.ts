@@ -19,3 +19,9 @@ type ExtensionStorage = {
   settings: FingerprintSettings
   ipInfo?: IpInfo
 }
+
+type InjectionConfig = {
+  disableWebRtc: boolean
+  languages?: readonly string[]
+  timezone?: string
+}
