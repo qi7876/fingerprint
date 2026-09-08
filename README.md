@@ -12,15 +12,18 @@ The IP Module refreshes only when Chrome starts, when the module is enabled, or 
 
 ## Local development and build
 
-Chrome 120+ and Node.js 20+ are required.
+Chrome 120+ and Node.js 20.19+ or 22.12+ are required.
 
 ```bash
 npm ci
 npm run typecheck
 npm test
 npm run build
+npm run package:chrome
 ```
 
 The build is written to `dist/`. Enable developer mode at `chrome://extensions`, choose “Load unpacked,” and select that directory.
+
+`npm run package:chrome` performs a clean production build and creates `fingerprint-chrome.zip` in the project root.
 
 Fast injection requires Chrome support and the optional `userScripts` permission.

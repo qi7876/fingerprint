@@ -1,13 +1,12 @@
-import { Plugin } from 'vite';
-import { rollup } from 'rollup';
-import { watch } from 'chokidar';
-import { writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
-import typescript from '@rollup/plugin-typescript';
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-
-import genLogPrefix from './gen-log-prefix';
+import {
+  transformWithOxc,
+  type Plugin,
+  type ResolvedConfig,
+  type ViteDevServer,
+} from 'vite'
 
 type CoreBundleOptions = {
   inputFilePath: string
@@ -16,43 +15,41 @@ type CoreBundleOptions = {
   params: string
 }
 
-export const coreBundle = (options: CoreBundleOptions): Plugin => ({
-  name: 'core-bundle',
-  async configResolved() {
-    await bundle(options);
-  },
-  configureServer(server) {
-    const watcher = watch([options.inputFilePath], { persistent: true });
-    watcher.on('change', async () => {
-      await bundle(options);
-      server.ws.send({ type: 'full-reload' });
-    });
+export const coreBundle = (options: CoreBundleOptions): Plugin => {
+  let inputPath = ''
+  let outputPath = ''
+
+  const bundle = async (): Promise<void> => {
+    const source = readFileSync(inputPath, 'utf8')
+    const result = await transformWithOxc(source, inputPath, { lang: 'ts' })
+    const output = `export function ${options.functionName}(${options.params}) {\n${result.code}\n}\n`
+
+    let current = ''
+    try {
+      current = readFileSync(outputPath, 'utf8')
+    } catch {
+      // The generated output does not exist on the first build.
+    }
+    if (current !== output) writeFileSync(outputPath, output)
   }
-})
 
-async function bundle({ inputFilePath, outputFilePath, functionName, params }: CoreBundleOptions) {
-  const bundle = await rollup({
-    input: inputFilePath,
-    plugins: [
-      genLogPrefix("__LOG_PREFIX_FILE_PATH__"),
-      resolve(),
-      commonjs(),
-      typescript({
-        compilerOptions: {
-          isolatedModules: false,
-          preserveConstEnums: false,
-        },
-      }),
-    ],
-  });
-  const { output } = await bundle.generate({
-    format: 'es',
-    inlineDynamicImports: true,
-  });
-  const bundledCode = output[0].code;
-  const wrappedCode = `export function ${functionName}(${params}) {\n${bundledCode}\n}`
-
-  writeFileSync(outputFilePath, wrappedCode);
+  return {
+    name: 'core-bundle',
+    async configResolved(config: ResolvedConfig) {
+      inputPath = resolve(config.root, options.inputFilePath)
+      outputPath = resolve(config.root, options.outputFilePath)
+      await bundle()
+    },
+    configureServer(server: ViteDevServer) {
+      server.watcher.add(inputPath)
+      server.watcher.on('change', (changedPath) => {
+        if (resolve(changedPath) !== inputPath) return
+        void bundle().then(() => {
+          server.ws.send({ type: 'full-reload' })
+        })
+      })
+    },
+  }
 }
 
-export default coreBundle;
+export default coreBundle

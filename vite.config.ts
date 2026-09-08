@@ -1,11 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import { resolve } from 'path'
-import { crx } from '@crxjs/vite-plugin'
+import { fileURLToPath } from 'node:url'
 
-import { chromeManifest } from './manifest'
-import { coreBundle } from './plugins/core-bundle'
-import genLogPrefix from './plugins/gen-log-prefix'
+import { crx } from '@crxjs/vite-plugin'
+import { defineConfig } from 'vite'
+
+import { chromeManifest } from './manifest.ts'
+import { coreBundle } from './plugins/core-bundle.ts'
+
+const sourceRoot = fileURLToPath(new URL('./src', import.meta.url))
 
 export default defineConfig({
   plugins: [
@@ -15,8 +16,6 @@ export default defineConfig({
       functionName: 'coreInject',
       params: '_args',
     }),
-    genLogPrefix('__LOG_PREFIX_FILE_PATH__') as any,
-    react(),
     crx({
       browser: 'chrome',
       manifest: chromeManifest,
@@ -24,13 +23,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': sourceRoot,
     },
   },
   build: {
     target: 'es2022',
     modulePreload: false,
-    minify: 'esbuild',
+    minify: 'oxc',
     outDir: 'dist',
   },
   server: { port: 3200, hmr: { port: 3200 } },

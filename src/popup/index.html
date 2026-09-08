@@ -7,7 +7,71 @@
     <title>fingerprint</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/popup/main.tsx"></script>
+    <main id="app" class="popup" aria-busy="true">
+      <h1>fingerprint</h1>
+
+      <section class="card" aria-labelledby="ip-module-title">
+        <header class="card-header">
+          <h2 id="ip-module-title">IP Module</h2>
+          <label class="switch" title="Enable IP Module">
+            <input id="ip-enabled" type="checkbox" />
+            <span aria-hidden="true"></span>
+          </label>
+        </header>
+
+        <div class="setting-row">
+          <label for="auto-timezone">Set timezone automatically</label>
+          <label class="switch">
+            <input id="auto-timezone" type="checkbox" />
+            <span aria-hidden="true"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label for="auto-languages">Set languages automatically</label>
+          <label class="switch">
+            <input id="auto-languages" type="checkbox" />
+            <span aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <dl class="ip-info">
+          <div><dt>IP</dt><dd id="ip-value">--</dd></div>
+          <div><dt>Country</dt><dd id="country-value">--</dd></div>
+          <div><dt>Timezone</dt><dd id="timezone-value">--</dd></div>
+          <div><dt>Languages</dt><dd id="languages-value">--</dd></div>
+          <div><dt>Updated</dt><dd id="updated-value">--</dd></div>
+        </dl>
+
+        <div id="status" class="status" role="alert" hidden></div>
+        <button id="refresh-ip" type="button">Refresh IP</button>
+      </section>
+
+      <section class="card" aria-labelledby="webrtc-title">
+        <header class="card-header">
+          <div>
+            <h2 id="webrtc-title">WebRTC</h2>
+            <p>When disabled, WebRTC and media APIs are removed from web pages.</p>
+          </div>
+          <label class="switch" title="Enable WebRTC">
+            <input id="webrtc-enabled" type="checkbox" />
+            <span aria-hidden="true"></span>
+          </label>
+        </header>
+      </section>
+
+      <section class="card" aria-labelledby="fast-inject-title">
+        <header class="card-header">
+          <div>
+            <h2 id="fast-inject-title">Fast injection</h2>
+            <p>Uses Chrome's userScripts API to inject earlier. Compatibility mode is used when disabled.</p>
+          </div>
+          <label class="switch" title="Enable fast injection">
+            <input id="fast-inject-enabled" type="checkbox" />
+            <span aria-hidden="true"></span>
+          </label>
+        </header>
+      </section>
+    </main>
+    <script type="module" src="/src/popup/main.ts"></script>
   </body>
 </html>
