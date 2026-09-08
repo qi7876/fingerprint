@@ -1,4 +1,4 @@
 export const coreInject: (args: {
-  storage: LocalStorage
-  fun?: () => void
+  storage: ExtensionStorage
+  fun?: (args: { storage: ExtensionStorage }) => void
 }) => void

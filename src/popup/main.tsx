@@ -1,27 +1,24 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
-import Application from './App'
+import { App, ConfigProvider, theme } from 'antd'
+
 import './index.css'
-import '@/locales'
-import { App, ConfigProvider } from 'antd'
-import { usePrefsStore } from './stores/prefs'
+import Application from './App'
 
-function MainApp() {
-  const prefs = usePrefsStore()
-
-  useEffect(() => {
-    prefs.initLanguage()
-  }, [])
-
-  return <ConfigProvider theme={prefs.getThemeConfig()}>
-    <App>
-      <Application />
-    </App>
-  </ConfigProvider>
-}
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <MainApp />
+    <ConfigProvider
+      theme={{
+        cssVar: true,
+        algorithm: prefersDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        token: { colorPrimary: '#1fc18a', borderRadius: 6 },
+      }}
+    >
+      <App>
+        <Application />
+      </App>
+    </ConfigProvider>
   </React.StrictMode>,
 )

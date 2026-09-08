@@ -1,18 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { resolve } from 'path'
-import { crx } from "@crxjs/vite-plugin"
-import { firefoxManifest, chromeManifest } from './manifest'
-import { coreBundle } from "./plugins/core-bundle";
-import genLogPrefix from "./plugins/gen-log-prefix";
+import { crx } from '@crxjs/vite-plugin'
 
-// import { type ManifestV3Export } from "@crxjs/vite-plugin"
+import { chromeManifest } from './manifest'
+import { coreBundle } from './plugins/core-bundle'
+import genLogPrefix from './plugins/gen-log-prefix'
 
-const args = process.argv
-const isFirefox = args.includes('--firefox')
-const isNoMinify = args.includes('--no-minify')
-
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     coreBundle({
@@ -21,11 +15,11 @@ export default defineConfig({
       functionName: 'coreInject',
       params: '_args',
     }),
-    genLogPrefix("__LOG_PREFIX_FILE_PATH__") as any,
+    genLogPrefix('__LOG_PREFIX_FILE_PATH__') as any,
     react(),
     crx({
-      browser: isFirefox ? 'firefox' : 'chrome',
-      manifest: isFirefox ? firefoxManifest : chromeManifest as any,
+      browser: 'chrome',
+      manifest: chromeManifest,
     }),
   ],
   resolve: {
@@ -36,9 +30,8 @@ export default defineConfig({
   build: {
     target: 'es2022',
     modulePreload: false,
-    minify: isNoMinify ? false : 'esbuild',
-    // sourcemap: (isFirefox && isNoMinify) ? true : undefined,
-    outDir: isFirefox ? 'dist-firefox' : 'dist',
+    minify: 'esbuild',
+    outDir: 'dist',
   },
   server: { port: 3200, hmr: { port: 3200 } },
 })

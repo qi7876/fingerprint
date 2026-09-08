@@ -1,171 +1,19 @@
-@import 'css/github-markdown.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .no-scrollbar {
-    /* 隐藏 IE, Edge 和 Firefox 的滚动条 */
-    /* IE 和 Edge */
-    -ms-overflow-style: none;
-    /* Firefox */
-    scrollbar-width: none;
-  }
-
-  /* 隐藏 Chrome, Safari 和 Opera 的滚动条 */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .flex-center {
-    @apply flex justify-center items-center;
-  }
-}
-
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 400;
-
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #4a4a4a;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-
-  --background: #FFFFFF;
-  --foreground: #11181C;
-
-  --default-50: #fafafa;
-  --default-100: #f4f4f5;
-  --default-200: #e4e4e7;
-  --default-300: #d4d4d8;
-  --default-400: #a1a1aa;
-  --default-500: #71717a;
-  --default-600: #52525b;
-  --default-700: #3f3f46;
-  --default-800: #27272a;
-  --default-900: #18181b;
-
-  --warning-50: #fefce8;
-  --warning-100: #fdedd3;
-  --warning-200: #fbdba7;
-  --warning-300: #f9c97c;
-  --warning-400: #f7b750;
-  --warning-500: #f5a524;
-  --warning-600: #c4841d;
-  --warning-700: #936316;
-  --warning-800: #62420e;
-  --warning-900: #312107;
-
-  --danger-50: #fee7ef;
-  --danger-100: #fdd0df;
-  --danger-200: #faa0bf;
-  --danger-300: #f871a0;
-  --danger-400: #f54180;
-  --danger-500: #f31260;
-  --danger-600: #c20e4d;
-  --danger-700: #920b3a;
-  --danger-800: #610726;
-  --danger-900: #310413;
 }
 
-.dark {
-  --background: #000000;
-  --foreground: #ECEDEE;
-
-  --default-50: #18181b;
-  --default-100: #27272a;
-  --default-200: #3f3f46;
-  --default-300: #52525b;
-  --default-400: #71717a;
-  --default-500: #a1a1aa;
-  --default-600: #d4d4d8;
-  --default-700: #e4e4e7;
-  --default-800: #f4f4f5;
-  --default-900: #fafafa;
-
-  --warning-50: #312107;
-  --warning-100: #62420e;
-  --warning-200: #936316;
-  --warning-300: #c4841d;
-  --warning-400: #f5a524;
-  --warning-500: #f7b750;
-  --warning-600: #f9c97c;
-  --warning-700: #fbdba7;
-  --warning-800: #fdedd3;
-  --warning-900: #fefce8;
-
-  --danger-50: #310413;
-  --danger-100: #610726;
-  --danger-200: #920b3a;
-  --danger-300: #c20e4d;
-  --danger-400: #f31260;
-  --danger-500: #f54180;
-  --danger-600: #f871a0;
-  --danger-700: #faa0bf;
-  --danger-800: #fdd0df;
-  --danger-900: #fee7ef;
+body {
+  margin: 0;
 }
 
-.ant-tabs .ant-tabs-content,
-.ant-tabs .ant-tabs-tabpane {
-  height: 100%;
-}
-
-.markdown-body {
-  background-color: transparent !important;
-}
-
-.markdown-body {
-  --base-size-4: 0.125rem;
-  --base-size-8: 0.25rem;
-  --base-size-16: 0.5rem;
-  --base-size-24: 0.75rem;
-  --base-size-40: 1rem;
-}
-
-.markdown-body ul,
-.markdown-body ol {
-  padding-left: 1em;
-  margin-left: 0;
-}
-
-.markdown-body ul {
-  list-style-type: disc;
-  list-style-position: outside;
-}
-
-.markdown-body ol {
-  list-style-type: decimal;
-  list-style-position: outside;
-}
-
-/* Ensure truncation works inside Ant Design Buttons in popup */
-.ant-btn.truncate,
-.ant-btn .truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ant-btn.truncate>span,
-.ant-btn .truncate>span {
-  display: inline-block;
-  max-width: 100%;
-  vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ant-btn,
-.ant-input {
-  border-radius: 0.5rem;
+.ant-card-body {
+  width: 100%;
 }

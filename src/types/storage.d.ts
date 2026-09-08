@@ -1,91 +1,21 @@
-type LocalStorage = {
-  version: string
-  config: LocalStorageConfig  // 配置
-  policies: LocalStoragePolicies  // 策略
+type FingerprintSettings = {
+  ipEnabled: boolean
+  autoTimezone: boolean
+  autoLanguages: boolean
+  webrtcEnabled: boolean
+  fastInject: boolean
 }
 
-type LogLevelString = "DEBUG" | "INFO" | "WARN" | "ERROR" | "NONE";
-
-type LocalStorageConfig = {
-  enable: boolean
-  // 种子
-  seed: {
-    browser: number
-    global: number
-  }
-  // 指纹
-  fp: HookFingerprint
-  // 操作
-  action: {
-    fastInject: boolean
-    ipInfo: {
-      enable: boolean
-      intervalMin: number
-      enableTimezone: boolean
-      enableLanguages: boolean
-    }
-  }
-  // 输入
-  input: {
-    globalSeed: string
-    ipInfo?: {
-      ip: string
-      countryCode: string
-      timezone: string
-      languages?: string[]
-      createdAt: number
-    }
-  }
-  // 订阅
-  subscribe: {
-    url: string
-  }
-  // 其他
-  prefs: {
-    language: string
-    theme: 'system' | 'light' | 'dark',
-    logLevel: LogLevelString
-  }
+type IpInfo = {
+  ip: string
+  countryCode: string
+  timezone: string
+  languages: string[]
+  updatedAt: number
 }
 
-type LocalStoragePolicies = {
-  whitelist: string[]
-  blacklist: string[]
-  isBlacklistMode: boolean  // 是否使用黑名单模式
-}
-
-type HookFingerprint = {
-  navigator: {
-    clientHints: DefaultHookMode | ValueHookMode<ClientHintsInfo>
-    languages: DefaultHookMode | RandomHookMode | ValueHookMode<string[]>
-    hardwareConcurrency: DefaultHookMode | RandomHookMode | ValueHookMode<number>
-  }
-  screen: {
-    size: DefaultHookMode | RandomHookMode | ValueHookMode<ScreenSize>
-    depth: DefaultHookMode | RandomHookMode | ValueHookMode<ScreenDepth>
-  }
-  normal: {
-    gpuInfo: DefaultHookMode | ValueHookMode<GpuInfo>
-  }
-  other: {
-    timezone: DefaultHookMode | ValueHookMode<TimeZoneInfo>
-    canvas: DefaultHookMode | RandomHookMode
-    audio: DefaultHookMode | RandomHookMode
-    webgl: DefaultHookMode | RandomHookMode
-    webrtc: DefaultHookMode | EnableHookMode | DisableHookMode
-    font: DefaultHookMode | RandomHookMode
-    webgpu: DefaultHookMode | RandomHookMode
-    domRect: DefaultHookMode | RandomHookMode
-    serviceWorker: DefaultHookMode | DisableHookMode
-  }
-}
-
-type HookFingerprintKey = keyof HookFingerprint['navigator'] | keyof HookFingerprint['screen'] | keyof HookFingerprint['other'] | keyof HookFingerprint['normal']
-
-type WindowStorage = {
-  url: string
-  host: string
-  seed: number
-  hooked: boolean
-  browser?: BrowserType
+type ExtensionStorage = {
+  schemaVersion: 1
+  settings: FingerprintSettings
+  ipInfo?: IpInfo
 }
