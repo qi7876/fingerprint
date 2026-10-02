@@ -12,18 +12,20 @@ The IP Module refreshes only when Chrome starts, when the module is enabled, or 
 
 ## Local development and build
 
-Chrome 120+ and Node.js 20.19+ or 22.12+ are required.
+Chrome 120+, Node.js 24.21.0 LTS, and pnpm 12.8.1 are required. The Node.js version is pinned in `.nvmrc` (run `nvm install` and `nvm use` if you use nvm), and the pnpm version is pinned in `package.json`.
+
+If pnpm is not installed, install it using [pnpm's installation guide](https://pnpm.io/installation). With Corepack installed, run `corepack enable pnpm` to use the project's pinned version.
 
 ```bash
-npm ci
-npm run typecheck
-npm test
-npm run build
-npm run package:chrome
+pnpm install --frozen-lockfile
+pnpm run typecheck
+pnpm test
+pnpm run build
+pnpm run package:chrome
 ```
 
 The build is written to `dist/`. Enable developer mode at `chrome://extensions`, choose “Load unpacked,” and select that directory.
 
-`npm run package:chrome` performs a clean production build and creates `fingerprint-chrome.zip` in the project root.
+`pnpm run package:chrome` performs a clean production build and creates `fingerprint-chrome.zip` in the project root.
 
 Fast injection requires Chrome support and the optional `userScripts` permission.
